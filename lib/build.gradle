@@ -1,4 +1,8 @@
-apply plugin: 'android-library'
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+apply plugin: 'maven-publish'
 
 android {
 
@@ -18,10 +22,30 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    // to support annotations such as @NonNull
-    compile "com.android.support:support-annotations:${supportPackageVersion}"
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation "androidx.annotation:annotation:${androidxAnnotationVersion}"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }
 
-// for maven central deployment
-apply from: 'https://raw.githubusercontent.com/chrisbanes/gradle-mvn-push/master/gradle-mvn-push.gradle'
+task sourceJar(type: Jar) {
+    from android.sourceSets.main.kotlin.srcDirs
+    classifier "sources"
+}
+
+publishing {
+    publications {
+        lib(MavenPublication) {
+            groupId "${GROUP}"
+            artifactId "expandable-view"
+            version "${VERSION_NAME}"
+            artifact(sourceJar)
+            artifact("$buildDir/outputs/aar/lib-release.aar")
+        }
+    }
+    repositories {
+        mavenLocal()
+    }
+}
+repositories {
+    mavenCentral()
+}
